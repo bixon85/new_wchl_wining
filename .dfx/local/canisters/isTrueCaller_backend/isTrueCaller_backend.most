@@ -1,0 +1,6 @@
+// Version: 1.0.0
+type List__56405783<T> = ?(T, List__56405783<T>);
+type Vote__730037431 = {fraudulent : Bool; legitimate : Bool};
+actor {
+  stable var callEntriesStable : [(Text, List__56405783<Vote__730037431>)]
+};
