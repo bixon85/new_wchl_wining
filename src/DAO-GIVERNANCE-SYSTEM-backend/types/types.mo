@@ -1,7 +1,9 @@
 import Time "mo:base/Time";
+import Result "mo:base/Result";
 
 module {
   
+  // Core data types
   public type ProposalInput = {
     title: Text;
     description: Text;
@@ -56,12 +58,16 @@ module {
     confidence_score: Float;
   };
   
-  // HTTP types for external AI service calls
+  // HTTP types for external service calls
   public type HttpRequest = {
     url: Text;
     method: Text;
     body: ?[Nat8];
     headers: [(Text, Text)];
+    transform: ?{
+      function: shared query HttpResponse -> async HttpResponse;
+      context: Blob;
+    };
   };
   
   public type HttpResponse = {
@@ -84,5 +90,34 @@ module {
     risks: [Text];
     opportunities: [Text];
     confidence_score: Float;
+  };
+  
+  // System types
+  public type SystemStats = {
+    totalProposals: Nat;
+    totalAnalyses: Nat;
+    systemUptime: Int;
+    version: Text;
+  };
+  
+  public type HealthStatus = {
+    status: Text;
+    timestamp: Int;
+    version: Text;
+    services: {
+      proposalService: Bool;
+      analysisService: Bool;
+      httpService: Bool;
+      storage: Bool;
+    };
+  };
+  
+  // Error types
+  public type ServiceError = {
+    #NetworkError: Text;
+    #ValidationError: Text;
+    #StorageError: Text;
+    #AIServiceError: Text;
+    #UnknownError: Text;
   };
 }
