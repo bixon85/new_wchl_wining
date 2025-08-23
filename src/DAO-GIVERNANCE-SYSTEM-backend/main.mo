@@ -1,37 +1,32 @@
 import Debug "mo:base/Debug";
 import Time "mo:base/Time";
 import Result "mo:base/Result";
-import HTTP "mo:base/HTTP";
+import Array "mo:base/Array";
+import Text "mo:base/Text";
+import Int "mo:base/Int";
+
+// Import custom modules
+import Types "types/Types";
+import ProposalService "services/ProposalService";
+import AnalysisService "services/AnalysisService";
+import HttpService "services/HttpService";
 
 actor DAOAnalyzer {
   
-  // Types
-  public type ProposalInput = {
-    title: Text;
-    description: Text;
-    timestamp: Int;
-  };
+  // Stable storage for upgrades
+  private stable var proposals: [(Text, Types.ProposalInput)] = [];
+  private stable var analyses: [(Text, Types.AnalysisResult)] = [];
   
-  public type AnalysisResult = {
-    proposal: ProposalInput;
-    likelihood_percentage: Float;
-    likelihood_level: Text;
-    community_sentiment: Text;
-    reasoning: Text;
-    risks: [Text];
-    opportunities: [Text];
-    confidence_score: Float;
-  };
-  
-  // Storage
-  private stable var proposals: [(Text, ProposalInput)] = [];
-  private stable var analyses: [(Text, AnalysisResult)] = [];
+  // Initialize services
+  private let proposalService = ProposalService.ProposalService();
+  private let analysisService = AnalysisService.AnalysisService();
+  private let httpService = HttpService.HttpService();
   
   // Main analysis function
-  public func analyzeProposal(title: Text, description: Text) : async Result.Result<AnalysisResult, Text> {
+  public func analyzeProposal(title: Text, description: Text) : async Result.Result<Types.AnalysisResult, Text> {
     try {
-      // Create proposal
-      let proposal: ProposalInput = {
+      // Create proposal input
+      let proposal: Types.ProposalInput = {
         title = title;
         description = description;
         timestamp = Time.now();
@@ -41,20 +36,22 @@ actor DAOAnalyzer {
       let proposalId = title # "_" # Int.toText(Time.now());
       
       // Store proposal
-      proposals := (proposalId, proposal) # proposals;
+      proposals := Array.append(proposals, [(proposalId, proposal)]);
       
-      // Call external AI service
+      // Call external AI service via HTTP outcall
       let aiRequest = {
         title = title;
         description = description;
       };
       
-      let aiResult = await callExternalAI(aiRequest);
-      
-      switch (aiResult) {
-        case (#ok(analysis)) {
+      switch (await httpService.callExternalAI(aiRequest)) {
+        case (#ok(aiResponse)) {
+          // Process AI response into AnalysisResult
+          let analysis = analysisService.processAIResponse(proposal, aiResponse);
+          
           // Store analysis
-          analyses := (proposalId, analysis) # analyses;
+          analyses := Array.append(analyses, [(proposalId, analysis)]);
+          
           #ok(analysis)
         };
         case (#err(error)) {
@@ -62,72 +59,31 @@ actor DAOAnalyzer {
         };
       }
     } catch (error) {
-      #err("Analysis failed")
-    }
-  };
-  
-  // HTTP outcall to external AI service
-  private func callExternalAI(request: {title: Text; description: Text}) : async Result.Result<AnalysisResult, Text> {
-    let host = "your-ai-service.railway.app";
-    let url = "https://" # host # "/analyze";
-    
-    let requestBody = "{\"title\":\"" # request.title # "\",\"description\":\"" # request.description # "\"}";
-    
-    let httpRequest = {
-      url = url;
-      method = #POST;
-      body = ?Text.encodeUtf8(requestBody);
-      headers = [
-        ("Content-Type", "application/json"),
-        ("Accept", "application/json")
-      ];
-    };
-    
-    try {
-      let response = await HTTP.request(httpRequest);
-      
-      switch (response.status) {
-        case (200) {
-          // Parse response and create AnalysisResult
-          // This is simplified - you'd need proper JSON parsing
-          let mockResult: AnalysisResult = {
-            proposal = {
-              title = request.title;
-              description = request.description;
-              timestamp = Time.now();
-            };
-            likelihood_percentage = 75.0;
-            likelihood_level = "High";
-            community_sentiment = "Positive";
-            reasoning = "Analysis completed successfully";
-            risks = ["Standard governance risks"];
-            opportunities = ["Community engagement"];
-            confidence_score = 85.0;
-          };
-          #ok(mockResult)
-        };
-        case (_) {
-          #err("HTTP error: " # Nat.toText(response.status))
-        };
-      }
-    } catch (error) {
-      #err("Network error")
+      #err("Analysis failed: " # debug_show(error))
     }
   };
   
   // Query functions
-  public query func getProposals() : async [(Text, ProposalInput)] {
+  public query func getProposals() : async [(Text, Types.ProposalInput)] {
     proposals
   };
   
-  public query func getAnalyses() : async [(Text, AnalysisResult)] {
+  public query func getAnalyses() : async [(Text, Types.AnalysisResult)] {
     analyses
   };
   
-  public query func getAnalysis(proposalId: Text) : async ?AnalysisResult {
-    switch (Array.find<(Text, AnalysisResult)>(analyses, func((id, _)) = id == proposalId)) {
+  public query func getAnalysis(proposalId: Text) : async ?Types.AnalysisResult {
+    switch (Array.find<(Text, Types.AnalysisResult)>(analyses, func((id, _)) = id == proposalId)) {
       case (?(_, analysis)) { ?analysis };
       case null { null };
+    }
+  };
+  
+  // Health check
+  public query func health() : async { status: Text; timestamp: Int } {
+    {
+      status = "healthy";
+      timestamp = Time.now();
     }
   };
 }
