@@ -7,7 +7,7 @@ import Array "mo:base/Array";
 import Nat8 "mo:base/Nat8";
 import Char "mo:base/Char";
 
-import Types "../types/Types";
+import Types "../types/types";
 
 module {
   
@@ -96,7 +96,7 @@ module {
       
       for (char in chars) {
         switch (char) {
-          case ('"') { result #= "\\\"" };
+          case ('\"') { result #= "\\\"" };
           case ('\\') { result #= "\\\\" };
           case ('\n') { result #= "\\n" };
           case ('\r') { result #= "\\r" };
