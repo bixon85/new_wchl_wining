@@ -1,0 +1,1 @@
+export { ProposalInput } from './ProposalInput';
