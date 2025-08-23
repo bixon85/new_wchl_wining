@@ -15,7 +15,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vite/client"]                 // ✅ use vite/client instead of only node
+    "types": ["node"]
+    // "types": ["vite/client"]                 // ✅ use vite/client instead of only node
   },
   "include": ["src"],
   "exclude": ["node_modules"]
