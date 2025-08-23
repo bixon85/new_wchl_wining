@@ -1,0 +1,26 @@
+{
+  "canisters": {
+    "DAO-GIVERNANCE-SYSTEM-backend": {
+      "main": "src/DAO-GIVERNANCE-SYSTEM-backend/main.mo",
+      "type": "motoko"
+    },
+    "DAO-GIVERNANCE-SYSTEM-frontend": {
+      "dependencies": [
+        "DAO-GIVERNANCE-SYSTEM-backend"
+      ],
+      "source": [
+        "src/DAO-GIVERNANCE-SYSTEM-frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "DAO-GIVERNANCE-SYSTEM-frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}
