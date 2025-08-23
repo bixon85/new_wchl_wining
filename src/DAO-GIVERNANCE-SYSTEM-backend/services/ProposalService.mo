@@ -3,7 +3,7 @@ import Text "mo:base/Text";
 import Result "mo:base/Result";
 import Debug "mo:base/Debug";
 
-import Types "../types/Types";
+import Types "../types/types";
 
 module {
   

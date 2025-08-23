@@ -2,7 +2,7 @@ import Time "mo:base/Time";
 import Array "mo:base/Array";
 import Debug "mo:base/Debug";
 
-import Types "../types/Types";
+import Types "../types/types";
 
 module {
   

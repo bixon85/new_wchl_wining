@@ -2,7 +2,7 @@ import Text "mo:base/Text";
 import Float "mo:base/Float";
 import Array "mo:base/Array";
 
-import Types "../types/Types";
+import Types "../types/types";
 import TextUtils "TextUtils";
 
 module {

@@ -8,7 +8,7 @@ import HashMap "mo:base/HashMap";
 import Iter "mo:base/Iter";
 
 // Import custom modules
-import Types "types/Types";
+import Types "types/types";
 import ProposalService "services/ProposalService";
 import AnalysisService "services/AnalysisService";
 import HttpService "services/HttpService";
